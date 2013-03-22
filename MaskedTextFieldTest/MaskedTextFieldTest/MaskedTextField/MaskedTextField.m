@@ -51,21 +51,25 @@
     }
     
     NSString *newText = [self.formatter stringForObjectValue:text];
-    [textField setText:newText];
     
     NSCharacterSet *numbers = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
-    NSRange lastDigitPosition = [textField.text rangeOfCharacterFromSet:numbers
+    NSRange lastDigitPosition = [newText rangeOfCharacterFromSet:numbers
                                                                 options:NSBackwardsSearch];
     
-    UITextPosition *textFieldSelectedTextRange;
+    NSUInteger oldLength = [textField.text length];
     
-    if (lastDigitPosition.location != NSNotFound) {
-        textFieldSelectedTextRange = [textField positionFromPosition:textField.beginningOfDocument offset:lastDigitPosition.location + 1];
+    if (lastDigitPosition.location == NSNotFound) {
+        [textField setText:@""];
     } else {
-        textFieldSelectedTextRange = [textField positionFromPosition:textField.beginningOfDocument offset:0];
+        [textField setText:[newText substringToIndex:lastDigitPosition.location + 1]];
     }
     
-    [textField setSelectedTextRange:[textField textRangeFromPosition:textFieldSelectedTextRange toPosition:textFieldSelectedTextRange]];
+    NSInteger offset = [textField.text length] - oldLength;
+    
+    if (offset > 0) {
+        UITextPosition *pos = [textField positionFromPosition:textField.beginningOfDocument offset:range.location + offset];
+        [textField setSelectedTextRange:[textField textRangeFromPosition:pos toPosition:pos]];
+    }
     
     return NO;
 }
